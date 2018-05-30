@@ -22,12 +22,13 @@ import java.nio.channels.Selector
 class UdpVpnService(
         val tunnel: VpnService,
         val inputCh: Channel<IpV4Packet>,
-        val outputCh: Channel<IpV4Packet>,
         val closeCh: Channel<Unit>) {
 
     companion object {
         private const val TAG = "UdpVpnService"
     }
+
+    val outputCh= Channel<IpV4Packet>()
 
     private val selector = Selector.open()
     private val mux = Mutex()

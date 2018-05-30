@@ -22,7 +22,6 @@ class LocalVpnService : VpnService() {
 
     private val closeCh = Channel<Unit>()
     private val inputCh = Channel<IpV4Packet>()
-    private val udpOutputCh = Channel<IpV4Packet>()
 
     private var vpnInterface: ParcelFileDescriptor? = null
 
@@ -39,7 +38,7 @@ class LocalVpnService : VpnService() {
         super.onCreate()
         setupVpn()
         // Initialize all services for VPN.
-        udpVpnService = UdpVpnService(this, inputCh, udpOutputCh, closeCh)
+        udpVpnService = UdpVpnService(this, inputCh, closeCh)
         udpVpnService!!.start()
         startVpn()
     }
@@ -86,7 +85,7 @@ class LocalVpnService : VpnService() {
                 Log.d(TAG, "REQUEST\n${packet}")
                 when (packet.header.protocol) {
                     IpNumber.UDP -> {
-                        udpOutputCh.send(packet)
+                        udpVpnService!!.outputCh.send(packet)
                     }
                     IpNumber.TCP -> {
                         // TODO:
