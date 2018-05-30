@@ -5,8 +5,3 @@ This is a demo project to building VPN app, for learning [Kotlin](https://kotlin
 
 If you are interested, welcome to contribute.
 
-TODO List
-===
-
-- Add TCP protocol.
-

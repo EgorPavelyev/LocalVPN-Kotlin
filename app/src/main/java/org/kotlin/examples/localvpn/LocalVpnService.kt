@@ -26,6 +26,7 @@ class LocalVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
 
     private var udpVpnService: UdpVpnService? = null
+    private var tcpVpnService:TcpVpnService?=null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.getStringExtra("COMMAND") == "STOP") {
@@ -40,6 +41,8 @@ class LocalVpnService : VpnService() {
         // Initialize all services for VPN.
         udpVpnService = UdpVpnService(this, inputCh, closeCh)
         udpVpnService!!.start()
+        tcpVpnService= TcpVpnService(this,inputCh,closeCh)
+        tcpVpnService!!.start()
         startVpn()
     }
 
@@ -49,12 +52,11 @@ class LocalVpnService : VpnService() {
     }
 
     private fun setupVpn() {
-        var builder = Builder();
-        builder.addAddress("10.0.2.15", 24)
+        var builder = Builder()
+                .addAddress("10.0.2.15", 24)
                 .addDnsServer("8.8.8.8")
-                //.addRoute("192.168.3.0",24)
-                .addRoute("8.8.8.0", 24)
-                .setSession(TAG);
+                .addRoute("0.0.0.0", 0)
+                .setSession(TAG)
         vpnInterface = builder.establish()
         Log.d(TAG, "VPN interface has established")
     }
@@ -88,7 +90,7 @@ class LocalVpnService : VpnService() {
                         udpVpnService!!.outputCh.send(packet)
                     }
                     IpNumber.TCP -> {
-                        // TODO:
+                        tcpVpnService!!.outputCh.send(packet)
                     }
                     else -> {
                         Log.w(TAG, "Unknown packet type");
@@ -117,6 +119,7 @@ class LocalVpnService : VpnService() {
         closeCh.close()
         vpnInterface?.close()
         udpVpnService?.stop()
+        tcpVpnService?.stop()
         stopSelf()
         Log.i(TAG, "Stopped VPN")
     }
